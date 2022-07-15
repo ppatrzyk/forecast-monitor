@@ -1,11 +1,15 @@
 mod request;
 
+use chrono::prelude::*;
+use itertools::izip;
+
 pub enum Source {
     OpenMeteo,
 }
 
 #[derive(Debug)]
 struct Forecast {
+    source: String,
     forecast_time: String,
     weather_time: String,
     temperature: f64,
@@ -21,11 +25,12 @@ pub async fn process(source: Source) -> () {
     let resp:Vec<Forecast> = match source {
         Source::OpenMeteo => open_meteo().await
     };
-    println!("{:#?}", resp);
     // TODO write to kafka
 }
 
 async fn open_meteo() -> Vec<Forecast> {
+    let forecast_time_dt: DateTime<Utc> = Utc::now();
+    let forecast_time_str: String = forecast_time_dt.to_rfc3339_opts(SecondsFormat::Millis, true);
     // https://api.open-meteo.com/v1/forecast?current_weather=true&timezone=UTC&latitude=51.11&longitude=17.03&hourly=temperature_2m,rain,showers
     let url = "https://api.open-meteo.com/v1/forecast/?hourly=temperature_2m,rain,showers".to_string();
     let query_params = [
@@ -42,16 +47,22 @@ async fn open_meteo() -> Vec<Forecast> {
             vec![]
         }
         Ok(map) => {
-            let mut v: Vec<Forecast> = Vec::new();
-            println!("{:#?}", map["hourly"]);
-            let forecast = Forecast {
-                forecast_time: "dummy".to_string(),
-                weather_time: "dummy".to_string(),
-                temperature: 0.0,
-                precipitation: 0.0,
-            };
-            v.push(forecast);
-            v
+            let mut forecasts: Vec<Forecast> = Vec::new();
+            let times = map["hourly"]["time"].as_array().unwrap();
+            let temps = map["hourly"]["temperature_2m"].as_array().unwrap();
+            let precips = map["hourly"]["rain"].as_array().unwrap();
+            for (time, temp, precip) in izip!(times, temps, precips) {
+                let forecast = Forecast {
+                    source: "open-meteo.com".to_string(),
+                    forecast_time: forecast_time_str.to_owned(),
+                    weather_time: time.to_string(),
+                    temperature: temp.as_f64().unwrap(),
+                    precipitation: precip.as_f64().unwrap(),
+                };
+                // println!("{:#?}", forecast);
+                forecasts.push(forecast);
+            }
+            forecasts
         }
     };
     forecasts
