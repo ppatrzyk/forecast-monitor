@@ -1,6 +1,6 @@
+mod request;
+
 use clokwerk::{AsyncScheduler, TimeUnits};
-use serde_json::Value;
-use std::collections::HashMap;
 use std::time::Duration;
 
 async fn periodic_func() -> () {
@@ -8,16 +8,8 @@ async fn periodic_func() -> () {
 }
 
 async fn test_req() -> () {
-    let resp = req("http://ip-api.com/json/".to_string()).await;
+    let resp = request::req("http://ip-api.com/json/".to_string()).await;
     println!("{:#?}", resp);
-}
-
-async fn req(url: String) -> Result<HashMap<String, Value>, Box<dyn std::error::Error>> {
-    let resp = reqwest::get(url)
-        .await?
-        .json::<HashMap<String, Value>>()
-        .await?;
-    Ok(resp)
 }
 
 #[tokio::main]
