@@ -35,7 +35,6 @@ async fn open_meteo() -> Vec<Forecast> {
         ("longitude", "17.03"),
     ];
     let resp = request::req(url, &query_params).await;
-    println!("{:#?}", resp);
 
     let forecasts = match resp {
         Err(_e) => {
@@ -44,6 +43,7 @@ async fn open_meteo() -> Vec<Forecast> {
         }
         Ok(map) => {
             let mut v: Vec<Forecast> = Vec::new();
+            println!("{:#?}", map["hourly"]);
             let forecast = Forecast {
                 forecast_time: "dummy".to_string(),
                 weather_time: "dummy".to_string(),
