@@ -16,11 +16,6 @@ struct Forecast {
     precipitation: f64,
 }
 
-pub async fn test_req(url: String) -> () {
-    let resp = request::req(url, &[]).await;
-    println!("{:#?}", resp);
-}
-
 pub async fn process(source: Source) -> () {
     let resp:Vec<Forecast> = match source {
         Source::OpenMeteo => open_meteo().await

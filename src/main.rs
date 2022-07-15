@@ -12,7 +12,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Scheduler starts...");
     let mut scheduler = AsyncScheduler::new();
     scheduler.every(2.seconds()).run(periodic_func);
-    scheduler.every(5.seconds()).run(|| api_processor::test_req("http://ip-api.com/json/".to_string()));
     scheduler.every(5.seconds()).run(|| api_processor::process(api_processor::Source::OpenMeteo));
     loop {
         scheduler.run_pending().await;
