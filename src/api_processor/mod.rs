@@ -4,23 +4,29 @@ pub enum Source {
     OpenMeteo,
 }
 
+#[derive(Debug)]
+struct Forecast {
+    forecast_time: String,
+    weather_time: String,
+    temperature: f64,
+    precipitation: f64,
+}
+
 pub async fn test_req(url: String) -> () {
     let resp = request::req(url, &[]).await;
     println!("{:#?}", resp);
 }
 
-// TODO parse_func should return some common data structure
 pub async fn process(source: Source) -> () {
-    // take processing func as arg
-    // write to kafka
-
-    let resp = match source {
+    let resp:Vec<Forecast> = match source {
         Source::OpenMeteo => open_meteo().await
     };
     println!("{:#?}", resp);
+    // TODO write to kafka
 }
 
-async fn open_meteo() -> String {
+async fn open_meteo() -> Vec<Forecast> {
+    // https://api.open-meteo.com/v1/forecast?current_weather=true&timezone=UTC&latitude=51.11&longitude=17.03&hourly=temperature_2m,rain,showers
     let url = "https://api.open-meteo.com/v1/forecast/?hourly=temperature_2m,rain,showers".to_string();
     let query_params = [
         ("current_weather", "true"),
@@ -29,8 +35,24 @@ async fn open_meteo() -> String {
         ("longitude", "17.03"),
     ];
     let resp = request::req(url, &query_params).await;
-    // TODO pattern match if it's ok here, return common anyway
     println!("{:#?}", resp);
-    "TODO common structure".to_string()
-    // https://api.open-meteo.com/v1/forecast?current_weather=true&timezone=UTC&latitude=51.11&longitude=17.03&hourly=temperature_2m,rain,showers
+
+    let forecasts = match resp {
+        Err(_e) => {
+            println!("OpenMeteo failed");
+            vec![]
+        }
+        Ok(map) => {
+            let mut v: Vec<Forecast> = Vec::new();
+            let forecast = Forecast {
+                forecast_time: "dummy".to_string(),
+                weather_time: "dummy".to_string(),
+                temperature: 0.0,
+                precipitation: 0.0,
+            };
+            v.push(forecast);
+            v
+        }
+    };
+    forecasts
 }
