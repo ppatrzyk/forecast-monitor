@@ -1,0 +1,27 @@
+
+version: "3"
+
+# TODO hide ports
+# TODO volumes
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.2.0
+    ports:
+      - "2181:2181"
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_SERVER_ID=1
+
+  kafka:
+    image: confluentinc/cp-kafka:7.2.0
+    ports:
+      - "29092:29092"
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:29092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    depends_on:
+      - zookeeper
+
+# https://docs.confluent.io/platform/current/installation/docker/config-reference.html#zk-configuration
