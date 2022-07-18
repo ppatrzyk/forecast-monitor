@@ -19,10 +19,16 @@ pub struct Forecast {
 }
 
 pub async fn process(source: Source) -> () {
-    let resp:Vec<Forecast> = match source {
+    println!("process triggered");
+    let messages:Vec<Forecast> = match source {
         Source::OpenMeteo => open_meteo().await
     };
-    // TODO write to kafka
+    println!("messages received");
+    for msg in messages {
+        // TODO what should be awaited
+        kafka::send(msg).await;
+        println!("Msg sent");
+    }
 }
 
 async fn open_meteo() -> Vec<Forecast> {
