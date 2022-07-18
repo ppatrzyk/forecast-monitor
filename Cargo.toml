@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 chrono = "0.4.19"
 clokwerk = "0.4.0-rc1"
+futures = "0.3.21"
 itertools = "0.10.3"
 rdkafka = "0.28.0"
 reqwest = { version = "0.11.11", features = ["json"] }

@@ -2,6 +2,7 @@ mod request;
 mod kafka;
 
 use chrono::prelude::*;
+use futures::future::join_all;
 use itertools::izip;
 use serde::{Serialize, Deserialize};
 
@@ -24,11 +25,8 @@ pub async fn process(source: Source) -> () {
         Source::OpenMeteo => open_meteo().await
     };
     println!("messages received");
-    for msg in messages {
-        // TODO what should be awaited
-        kafka::send(msg).await;
-        println!("Msg sent");
-    }
+    join_all(messages.into_iter().map(|msg| kafka::send(msg))).await;
+    println!("messages sent");
 }
 
 async fn open_meteo() -> Vec<Forecast> {
