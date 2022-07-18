@@ -1,14 +1,16 @@
 mod request;
+mod kafka;
 
 use chrono::prelude::*;
 use itertools::izip;
+use serde::{Serialize, Deserialize};
 
 pub enum Source {
     OpenMeteo,
 }
 
-#[derive(Debug)]
-struct Forecast {
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Forecast {
     source: String,
     forecast_time: String,
     weather_time: String,
