@@ -19,9 +19,22 @@ services:
       - "29092:29092"
     environment:
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:29092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:29092
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
     depends_on:
       - zookeeper
+
+  init-kafka:
+    image: confluentinc/cp-kafka:7.2.0
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      kafka-topics --bootstrap-server kafka:29092 --list
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic weather --replication-factor 1 --partitions 1
+      echo -e 'Created topics:'
+      kafka-topics --bootstrap-server kafka:29092 --list
+      "
 
 # https://docs.confluent.io/platform/current/installation/docker/config-reference.html#zk-configuration
