@@ -83,10 +83,9 @@ async fn tomorrow(config: Config) -> Vec<Forecast> {
         ("timesteps", "1h"),
         ("units", "metric"),
         ("apikey", &config.get_string("tomorrow").unwrap()),
-        ("latlon", &[config.get_string("latitude").unwrap().as_str(), config.get_string("longitude").unwrap().as_str()].join(",")),
+        ("location", &[config.get_string("latitude").unwrap().as_str(), config.get_string("longitude").unwrap().as_str()].join(",")),
     ];
     let resp = request::req(url, &query_params).await;
-    println!("{:?}", resp);
     match resp {
         Err(_e) => {
             println!("Tomorrow.io failed");
@@ -103,7 +102,6 @@ async fn tomorrow(config: Config) -> Vec<Forecast> {
                     temperature: entry["values"]["temperature"].as_f64().unwrap(),
                     precipitation: entry["values"]["precipitationIntensity"].as_f64().unwrap(),
                 };
-                println!("{:?}", forecast);
                 forecasts.push(forecast);
             }
             forecasts
