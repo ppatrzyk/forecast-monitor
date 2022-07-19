@@ -10,6 +10,7 @@ use serde::{Serialize, Deserialize};
 pub enum Source {
     OpenMeteo,
     Tomorrow,
+    WeatherApi,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -31,6 +32,7 @@ pub async fn process(source: Source, config: Config) -> () {
     let messages:Vec<Forecast> = match source {
         Source::OpenMeteo => open_meteo(config).await,
         Source::Tomorrow => tomorrow(config).await,
+        Source::WeatherApi => weatherapi(config).await,
     };
     println!("messages received");
     join_all(messages.into_iter().map(|msg| kafka::send(msg))).await;
@@ -103,6 +105,45 @@ async fn tomorrow(config: Config) -> Vec<Forecast> {
                     precipitation: entry["values"]["precipitationIntensity"].as_f64().unwrap(),
                 };
                 forecasts.push(forecast);
+            }
+            forecasts
+        }
+    }
+}
+
+async fn weatherapi(config: Config) -> Vec<Forecast> {
+    let forecast_time: String = get_time();
+    // https://api.weatherapi.com/v1/forecast.json?q=51.11,17.03&days=14&key=
+    let url = "https://api.weatherapi.com/v1/forecast.json".to_string();
+    let query_params = [
+        ("days", "14"),
+        ("key", &config.get_string("weatherapi").unwrap()),
+        ("q", &[config.get_string("latitude").unwrap().as_str(), config.get_string("longitude").unwrap().as_str()].join(",")),
+    ];
+    let resp = request::req(url, &query_params).await;
+    println!("{:?}", resp);
+    match resp {
+        Err(_e) => {
+            println!("Weatherapi failed");
+            vec![]
+        }
+        Ok(json) => {
+            let mut forecasts: Vec<Forecast> = Vec::new();
+            let days = json["forecast"]["forecastday"].as_array().unwrap();
+            for day in days {
+                let entries = day["hour"].as_array().unwrap();
+                for entry in entries {
+                    let weather_time = Utc.timestamp_opt(entry["time_epoch"].as_i64().unwrap(), 0).unwrap().to_rfc3339_opts(SecondsFormat::Millis, true);
+                    let forecast = Forecast {
+                        source: "weatherapi".to_string(),
+                        forecast_time: forecast_time.to_owned(),
+                        weather_time: weather_time.to_string(),
+                        temperature: entry["temp_c"].as_f64().unwrap(),
+                        precipitation: entry["precip_mm"].as_f64().unwrap(),
+                    };
+                    println!("{:?}", forecast);
+                    forecasts.push(forecast);
+                }
             }
             forecasts
         }
