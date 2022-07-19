@@ -2,6 +2,7 @@ mod request;
 mod kafka;
 
 use chrono::prelude::*;
+use config::Config;
 use futures::future::join_all;
 use itertools::izip;
 use serde::{Serialize, Deserialize};
@@ -19,17 +20,17 @@ pub struct Forecast {
     precipitation: f64,
 }
 
-pub async fn process(source: Source) -> () {
+pub async fn process(source: Source, config: Config) -> () {
     println!("process triggered");
     let messages:Vec<Forecast> = match source {
-        Source::OpenMeteo => open_meteo().await
+        Source::OpenMeteo => open_meteo(config).await
     };
     println!("messages received");
     join_all(messages.into_iter().map(|msg| kafka::send(msg))).await;
     println!("messages sent");
 }
 
-async fn open_meteo() -> Vec<Forecast> {
+async fn open_meteo(config: Config) -> Vec<Forecast> {
     let forecast_time_dt: DateTime<Utc> = Utc::now();
     let forecast_time_str: String = forecast_time_dt.to_rfc3339_opts(SecondsFormat::Millis, true);
     // https://api.open-meteo.com/v1/forecast?current_weather=true&timezone=UTC&latitude=51.11&longitude=17.03&hourly=temperature_2m,rain,showers
@@ -37,8 +38,8 @@ async fn open_meteo() -> Vec<Forecast> {
     let query_params = [
         ("current_weather", "true"),
         ("timezone", "UTC"),
-        ("latitude", "51.11"),
-        ("longitude", "17.03"),
+        ("latitude", &config.get_string("latitude").unwrap()),
+        ("longitude", &config.get_string("longitude").unwrap()),
     ];
     let resp = request::req(url, &query_params).await;
 
