@@ -2,7 +2,6 @@
 version: "3"
 
 # TODO hide ports
-# TODO volumes
 
 services:
   zookeeper:
@@ -23,6 +22,8 @@ services:
       - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT_DOCKER:PLAINTEXT,PLAINTEXT_LOCAL:PLAINTEXT
       - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT_DOCKER
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    volumes:
+      - ./data:/var/lib/kafka/data/
     depends_on:
       - zookeeper
 

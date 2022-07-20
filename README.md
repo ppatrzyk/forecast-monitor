@@ -1,7 +1,5 @@
 # forecast-monitor
 
-/var/lib/kafka/data/
-
 ### Configuration
 
 ```

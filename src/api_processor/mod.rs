@@ -7,6 +7,7 @@ use futures::future::join_all;
 use itertools::izip;
 use serde::{Serialize, Deserialize};
 
+#[derive(Debug)]
 pub enum Source {
     OpenMeteo,
     Tomorrow,
@@ -28,15 +29,14 @@ fn get_time() -> String {
 }
 
 pub async fn process(source: Source, config: Config) -> () {
-    println!("process triggered");
+    let start = get_time();
     let messages:Vec<Forecast> = match source {
         Source::OpenMeteo => open_meteo(config).await,
         Source::Tomorrow => tomorrow(config).await,
         Source::WeatherApi => weatherapi(config).await,
     };
-    println!("messages received");
     join_all(messages.into_iter().map(|msg| kafka::send(msg))).await;
-    println!("messages sent");
+    println!("messages sent, start: {}, end {} {:?}", start, get_time(), source);
 }
 
 async fn open_meteo(config: Config) -> Vec<Forecast> {
@@ -121,7 +121,6 @@ async fn weatherapi(config: Config) -> Vec<Forecast> {
         ("q", &[config.get_string("latitude").unwrap().as_str(), config.get_string("longitude").unwrap().as_str()].join(",")),
     ];
     let resp = request::req(url, &query_params).await;
-    println!("{:?}", resp);
     match resp {
         Err(_e) => {
             println!("Weatherapi failed");
@@ -141,7 +140,6 @@ async fn weatherapi(config: Config) -> Vec<Forecast> {
                         temperature: entry["temp_c"].as_f64().unwrap(),
                         precipitation: entry["precip_mm"].as_f64().unwrap(),
                     };
-                    println!("{:?}", forecast);
                     forecasts.push(forecast);
                 }
             }
