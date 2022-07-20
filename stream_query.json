@@ -1,0 +1,6 @@
+{
+    "ksql": "SELECT * FROM forecasts;",
+    "streamsProperties": {
+        "ksql.streams.auto.offset.reset": "earliest"
+    }
+}

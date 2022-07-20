@@ -1,0 +1,4 @@
+{
+    "ksql": "CREATE STREAM IF NOT EXISTS forecasts (id VARCHAR KEY, source VARCHAR, forecast_time VARCHAR, weather_time VARCHAR, temperature DOUBLE, precipitation DOUBLE) WITH (KAFKA_TOPIC = 'weather', VALUE_FORMAT='JSON');",
+    "streamsProperties": {}
+}
