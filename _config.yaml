@@ -1,3 +1,5 @@
 --- # Location
-  latitude:
-  longitude:
+  latitude: 51.11
+  longitude: 17.03
+  tomorrow: <API_KEY>
+  weatherapi: <API_KEY>
