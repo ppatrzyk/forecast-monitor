@@ -40,4 +40,15 @@ services:
       kafka-topics --bootstrap-server kafka:29092 --list
       "
 
+  ksql:
+    image: confluentinc/cp-ksqldb-server:7.2.0
+    ports:
+      - "8088:8088"
+    environment:
+      - KSQL_BOOTSTRAP_SERVERS=kafka:29092
+      - KSQL_LISTENERS=http://0.0.0.0:8088/
+      - KSQL_KSQL_SERVICE_ID=ksql_service_2_
+    depends_on:
+      - kafka
+
 # https://docs.confluent.io/platform/current/installation/docker/config-reference.html#zk-configuration
