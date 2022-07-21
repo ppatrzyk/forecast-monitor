@@ -12,11 +12,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Scheduler starts...");
     let mut scheduler = AsyncScheduler::new();
     let config_meteo = config.clone();
-    scheduler.every(1.minutes()).run(move || api_processor::process(api_processor::Source::OpenMeteo, config_meteo.clone()));
+    scheduler.every(5.minutes()).run(move || api_processor::process(api_processor::Source::OpenMeteo, config_meteo.clone()));
     let config_tomorrow = config.clone();
     scheduler.every(5.minutes()).run(move || api_processor::process(api_processor::Source::Tomorrow, config_tomorrow.clone()));
     let config_weatherapi = config.clone();
-    scheduler.every(1.minutes()).run(move || api_processor::process(api_processor::Source::WeatherApi, config_weatherapi.clone()));
+    scheduler.every(5.minutes()).run(move || api_processor::process(api_processor::Source::WeatherApi, config_weatherapi.clone()));
     loop {
         tokio::spawn(scheduler.run_pending());
         tokio::time::sleep(Duration::from_millis(100)).await;

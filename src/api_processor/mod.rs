@@ -132,7 +132,7 @@ async fn weatherapi(config: Config) -> Vec<Forecast> {
             for day in days {
                 let entries = day["hour"].as_array().unwrap();
                 for entry in entries {
-                    let weather_time = Utc.timestamp_opt(entry["time_epoch"].as_i64().unwrap(), 0).unwrap().to_rfc3339_opts(SecondsFormat::Millis, true);
+                    let weather_time = Utc.timestamp_opt(entry["time_epoch"].as_i64().unwrap(), 0).unwrap().to_rfc3339_opts(SecondsFormat::Secs, true);
                     let forecast = Forecast {
                         source: "weatherapi".to_string(),
                         forecast_time: forecast_time.to_owned(),
