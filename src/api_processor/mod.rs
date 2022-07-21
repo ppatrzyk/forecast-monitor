@@ -64,7 +64,7 @@ async fn open_meteo(config: Config) -> Vec<Forecast> {
                 let forecast = Forecast {
                     source: "open-meteo.com".to_string(),
                     forecast_time: forecast_time.to_owned(),
-                    weather_time: time.to_string(),
+                    weather_time: [time.as_str().unwrap(), ":00Z"].join("").to_string(),
                     temperature: temp.as_f64().unwrap(),
                     precipitation: precip.as_f64().unwrap(),
                 };
@@ -100,7 +100,7 @@ async fn tomorrow(config: Config) -> Vec<Forecast> {
                 let forecast = Forecast {
                     source: "tomorrow.io".to_string(),
                     forecast_time: forecast_time.to_owned(),
-                    weather_time: entry["startTime"].to_string(),
+                    weather_time: entry["startTime"].as_str().unwrap().to_string(),
                     temperature: entry["values"]["temperature"].as_f64().unwrap(),
                     precipitation: entry["values"]["precipitationIntensity"].as_f64().unwrap(),
                 };
