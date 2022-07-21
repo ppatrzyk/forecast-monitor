@@ -55,6 +55,7 @@ services:
       - KSQL_BOOTSTRAP_SERVERS=kafka:29092
       - KSQL_LISTENERS=http://0.0.0.0:8088/
       - KSQL_KSQL_SERVICE_ID=ksql_service_2_
+      - "KSQL_RESPONSE_HTTP_HEADERS_CONFIG=add access-control-allow-origin: *, add access-control-allow-methods: POST"
     depends_on:
       - kafka
 
