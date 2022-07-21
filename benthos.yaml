@@ -1,0 +1,24 @@
+input:
+  label: ""
+  kafka_franz:
+    seed_brokers:
+      - kafka:29092
+    topics:
+      - weather
+    regexp_topics: false
+    consumer_group: "benthos"
+
+output:
+  sql_insert:
+    driver: postgres
+    dsn: postgres://postgres:postgres@postgres:5432/weather?sslmode=disable
+    table: forecasts
+    columns: [ source, forecast_time, weather_time, temperature, precipitation ]
+    args_mapping: |
+      root = [
+        this.source,
+        this.forecast_time,
+        this.weather_time,
+        this.temperature,
+        this.precipitation,
+      ]

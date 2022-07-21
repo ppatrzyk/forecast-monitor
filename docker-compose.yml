@@ -3,8 +3,6 @@ version: "3"
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.2.0
-    ports:
-      - "2181:2181"
     environment:
       - ZOOKEEPER_CLIENT_PORT=2181
       - ZOOKEEPER_SERVER_ID=1
@@ -19,8 +17,6 @@ services:
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
       - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
       - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
-    volumes:
-      - ./data:/var/lib/kafka/data/
     depends_on:
       - zookeeper
 
@@ -29,8 +25,6 @@ services:
     depends_on:
       - kafka
     entrypoint: [ '/bin/sh', '-c' ]
-    volumes:
-      - ./stream_create.json:/home/appuser/stream_create.json
     command: |
       "
       kafka-topics --bootstrap-server kafka:29092 --list
@@ -38,6 +32,34 @@ services:
       echo -e 'Created topics:'
       kafka-topics --bootstrap-server kafka:29092 --list
       "
+  
+  benthos:
+    image: jeffail/benthos:4.4
+    volumes:
+      - ./benthos.yaml:/benthos.yaml
+    depends_on:
+      - kafka
+
+  postgrest:
+    image: postgrest/postgrest:v9.0.1
+    ports:
+      - "3000:3000"
+    environment:
+      - PGRST_DB_URI=postgres://postgres:postgres@postgres:5432/weather
+      - PGRST_DB_SCHEMAS=public
+      - PGRST_DB_ANON_ROLE=postgres
+    depends_on:
+      - postgres
+  
+  postgres:
+    image: postgres:14.4
+    environment:
+      - POSTGRES_DB=weather
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./init-table.sh:/docker-entrypoint-initdb.d/init-table.sh
+      - ./data:/var/lib/postgresql/data
 
   forecasts:
     image: forecasts:latest
