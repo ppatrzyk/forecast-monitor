@@ -33,13 +33,20 @@ services:
     image: confluentinc/cp-kafka:7.2.0
     depends_on:
       - kafka
+      - ksql
     entrypoint: [ '/bin/sh', '-c' ]
+    volumes:
+      - ./stream_create.json:/home/appuser/stream_create.json
     command: |
       "
       kafka-topics --bootstrap-server kafka:29092 --list
       kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic weather --replication-factor 1 --partitions 1
       echo -e 'Created topics:'
       kafka-topics --bootstrap-server kafka:29092 --list
+      curl -X POST http://ksql:8088/ksql \
+        --retry-connrefused --retry 7 \
+        -H \"Accept: application/vnd.ksql.v1+json\" \
+        -d @stream_create.json
       "
 
   ksql:
@@ -52,5 +59,11 @@ services:
       - KSQL_KSQL_SERVICE_ID=ksql_service_2_
     depends_on:
       - kafka
+
+  forecasts:
+    image: forecasts:latest
+    depends_on:
+      - kafka
+      - ksql
 
 # https://docs.confluent.io/platform/current/installation/docker/config-reference.html#zk-configuration

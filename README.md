@@ -19,3 +19,7 @@ curl -X "POST" "http://localhost:8088/query" \
      -H "Accept: application/vnd.ksql.v1+json" \
      -d @stream_query.json
 ```
+
+```
+docker build -t forecasts .
+```
