@@ -51,8 +51,8 @@ async fn open_meteo(config: Config) -> Vec<Forecast> {
     ];
     let resp = request::req(url, &query_params).await;
     match resp {
-        Err(_e) => {
-            println!("OpenMeteo failed");
+        Err(e) => {
+            println!("OpenMeteo failed: {:?}", e);
             vec![]
         }
         Ok(json) => {
@@ -89,8 +89,8 @@ async fn tomorrow(config: Config) -> Vec<Forecast> {
     ];
     let resp = request::req(url, &query_params).await;
     match resp {
-        Err(_e) => {
-            println!("Tomorrow.io failed");
+        Err(e) => {
+            println!("Tomorrow.io failed: {:?}", e);
             vec![]
         }
         Ok(json) => {
@@ -122,8 +122,8 @@ async fn weatherapi(config: Config) -> Vec<Forecast> {
     ];
     let resp = request::req(url, &query_params).await;
     match resp {
-        Err(_e) => {
-            println!("Weatherapi failed");
+        Err(e) => {
+            println!("Weatherapi failed: {:?}", e);
             vec![]
         }
         Ok(json) => {

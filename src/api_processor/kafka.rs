@@ -8,10 +8,8 @@ pub async fn send(msg: Forecast) -> () {
     let kafka_msg = FutureRecord::to("weather")
         .payload(&serialized_msg)
         .key(&msg.forecast_time);
-    // TODO change to docker address later
-    // TODO - this error not passed higher?
     let producer: &FutureProducer = &ClientConfig::new()
-        .set("bootstrap.servers", "localhost:39092")
+        .set("bootstrap.servers", "kafka:29092")
         .create()
         .expect("Producer creation error");
     let _delivery_status = producer.send(kafka_msg, Timeout::Never).await;
