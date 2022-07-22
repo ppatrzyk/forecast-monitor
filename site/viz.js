@@ -9,7 +9,7 @@ function format_date(date, offset) {
     return formatted
 }
 
-async function viz() {
+async function fetch_data() {
     let date = new Date();
     date.setMinutes(0);
     date.setSeconds(0);
@@ -19,7 +19,28 @@ async function viz() {
     let url = `${POSTGREST}/forecasts?weather_time=in.(${times[0]})`;
     let response = await fetch(url, {});
     let data = await response.json();
-    console.log(data);
+    viz_data(data)
 }
 
-document.addEventListener('DOMContentLoaded', (e) => {viz()});
+function get_trace(data, source) {
+    let filtered = data.filter(el => el.source == source);
+    filtered = filtered.sort((a, b) => a.forecast_time > b.forecast_time ? 1 : -1)
+    let trace = {
+        x: filtered.map(el => el.forecast_time),
+        y: filtered.map(el => el.temperature),
+        type: "scatter",
+    }
+    return trace
+}
+
+function viz_data(data) {
+    console.log(data);
+    let weatherapi_trace = get_trace(data, "weatherapi");
+    console.log(weatherapi_trace);
+    var layout = {
+        title: "TODO current hour",
+    };
+    Plotly.newPlot("viz", [weatherapi_trace, ], layout);
+}
+
+document.addEventListener('DOMContentLoaded', (e) => {fetch_data()});
